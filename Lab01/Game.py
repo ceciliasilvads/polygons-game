@@ -1,34 +1,33 @@
-# Game Ping-Pong
-
 from tkinter import *
 import random
 import time
+from PIL import ImageTk
 
-level = int(input("Qual nível você gostaria de jogar? 1/2/3/4/5 \n"))
-length = 500/level
-
+#level_choice = int(input("Qual nível você gostaria de jogar? 1/2/3/4/5 \n"))
+level_choice = 10
+length_bar = level_choice*10
 
 root = Tk()
 root.title("Ping Pong")
 root.resizable(0,0)
-root.wm_attributes("-topmost", -1)
 
-canvas = Canvas(root, width=800, height=600, bd=0,highlightthickness=0)
+background= ImageTk.PhotoImage(file="./fundo.jpg")
+
+canvas = Canvas(root, width=800, height=600, bd=0, highlightthickness=0)
 canvas.pack()
+canvas.create_image(0, 0, image=background, anchor="nw")
 
 root.update()
 
-# Variável
 count = 0
 lost = False
 
-#Classe que crias objetos "Bola"
 class Bola:
     def __init__(self, canvas, Barra, color):
         self.canvas = canvas
         self.Barra = Barra
-        self.id = canvas.create_oval(0, 0, 15, 15, fill=color)
-        self.canvas.move(self.id, 245, 200)
+        self.ball = canvas.create_oval(0, 0, 30, 30, fill=color)
+        self.canvas.move(self.ball, 245, 200)
 
         starts_x = [-3, -2, -1, 1, 2, 3]
         random.shuffle(starts_x)
@@ -41,46 +40,43 @@ class Bola:
 
 
     def draw(self):
-        self.canvas.move(self.id, self.x, self.y)
+        self.canvas.move(self.ball, self.x, self.y)
 
-        pos = self.canvas.coords(self.id)
+        position = self.canvas.coords(self.ball)
 
-        if pos[1] <= 0:
+        if position[1] <= 0:
             self.y = 3
 
-        if pos[3] >= self.canvas_height:
+        if position[3] >= self.canvas_height:
             self.y = -3
 
-        if pos[0] <= 0:
+        if position[0] <= 0:
             self.x = 3
             
-        if pos[2] >= self.canvas_width:
+        if position[2] >= self.canvas_width:
             self.x = -3
 
-        self.Barra_pos = self.canvas.coords(self.Barra.id)
+        self.Barra_position = self.canvas.coords(self.Barra.bar)
 
-
-        if pos[2] >= self.Barra_pos[0] and pos[0] <= self.Barra_pos[2]:
-            if pos[3] >= self.Barra_pos[1] and pos[3] <= self.Barra_pos[3]:
+        if position[2] >= self.Barra_position[0] and position[0] <= self.Barra_position[2]:
+            if position[3] >= self.Barra_position[1] and position[3] <= self.Barra_position[3]:
                 self.y = -3
                 global count
                 count +=1
                 score()
 
-
-        if pos[3] <= self.canvas_height:
+        if position[3] <= self.canvas_height:
             self.canvas.after(10, self.draw)
         else:
             game_over()
             global lost
             lost = True
 
-#Classe que crias objetos "Barra"
 class Barra:
     def __init__(self, canvas, color):
         self.canvas = canvas
-        self.id = canvas.create_rectangle(0, 0, length, 10, fill=color)
-        self.canvas.move(self.id, 200, 400)
+        self.bar = canvas.create_rectangle(0, 0, length_bar, 20, fill=color)
+        self.canvas.move(self.bar, 200, 400)
 
         self.x = 0
 
@@ -90,9 +86,9 @@ class Barra:
         self.canvas.bind_all("<KeyPress-Right>", self.move_right)
 
     def draw(self):
-        self.canvas.move(self.id, self.x, 0)
+        self.canvas.move(self.bar, self.x, 0)
 
-        self.pos = self.canvas.coords(self.id)
+        self.pos = self.canvas.coords(self.bar)
 
         if self.pos[0] <= 0:
             self.x = 0
@@ -108,42 +104,33 @@ class Barra:
     def move_left(self, event):
         if self.pos[0] >= 0:
             self.x = -3
-
+    
     def move_right(self, event):
         if self.pos[2] <= self.canvas_width:
             self.x = 3
 
-#Função que configura a tela para iniciar o jogo
 def start_game(event):
     global lost, count
     lost = False
     count = 0
     score()
-    canvas.itemconfig(game, text=" ")
+    canvas.itemconfig(end_game, text=" ")
 
     time.sleep(1)
-    #Mostra a barra 
     Barra.draw()
-    #Desenha a bolinha na tela
     Bola.draw()
 
-#Função que mostra a pontuação do jogador
 def score():
-    canvas.itemconfig(score_now, text="Pontos: " + str(count))
+    canvas.itemconfig(score_now, text="Pontuação: " + str(count))
 
-#Função que mostra o texto "Game over!" quando o jogo acaba
 def game_over():
-    canvas.itemconfig(game, text="Game over!")
+    canvas.itemconfig(end_game, text="Você Perdeu!")
 
-#Instancia uma barra de cor laranja
-Barra = Barra(canvas, "orange")
-#Instancia uma bola de cor roxa
-Bola = Bola(canvas, "purple")
+Barra = Barra(canvas, "gold")
+Bola = Bola(canvas, Barra, "blue")
 
-#Váriavel que guarda a pontuação do jogador
-score_now = canvas.create_text(430, 20, text="Pontos: " + str(count), fill = "green", font=("Arial", 16))
-game = canvas.create_text(400, 300, text=" ", fill="red", font=("Arial", 40))
-
+score_now = canvas.create_text(80, 20, text="Pontuação: " + str(count), fill="black", font=("Arial", 16))
+end_game = canvas.create_text(400, 300, text="Clique para começar!", fill="red", font=("Arial", 40))
 
 canvas.bind_all("<Button-1>", start_game)
 
