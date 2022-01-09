@@ -1,1 +1,1 @@
-# ball-game
+# Polygons Game
